@@ -13,14 +13,34 @@ sys.path.insert(0, project_root)
 sys.path.insert(0, os.path.join(project_root, 'src'))
 sys.path.insert(0, os.path.join(project_root, 'src', 'services'))
 sys.path.insert(0, os.path.join(project_root, 'src', 'models'))
+sys.path.insert(0, os.path.join(project_root, 'src', 'core'))
+sys.path.insert(0, os.path.join(project_root, 'src', 'domain'))
 
+# Debug: mostrar paths
+st.write("🔍 PATHS CONFIGURADOS:")
+for path in sys.path[:6]:  # Mostrar solo los primeros 6
+    st.write(f"   {path}")
+
+# Primero cargar servicios básicos
 try:
     from sentiment_service import SentimentService
     from dataset_analyzer import DatasetAnalyzer
-    st.success("✅ Sistema de análisis cargado correctamente")
+    st.success("✅ Sistema de análisis básico cargado correctamente")
 except ImportError as e:
-    st.error(f"❌ Error cargando el sistema: {e}")
+    st.error(f"❌ Error cargando sistema básico: {e}")
     st.stop()
+
+# Luego intentar cargar el nuevo servicio de temas
+try:
+    from services.topic_service import TopicService
+    topic_service = TopicService()
+    st.success(" Sistema de temas mejorado cargado")
+except ImportError as e:
+    st.warning(f" Sistema de temas mejorado no disponible: {e}")
+    st.info("💡 Usando análisis básico de temas...")
+    topic_service = None
+
+# ... el resto del código permanece igual ...
 
 def extract_aspects_simple(text):
     """Extraer palabras clave simples del texto - EN EL FRONTEND"""
@@ -126,44 +146,62 @@ def main():
                 help="Para datasets grandes, analizar una muestra es más rápido"
             )
             
+            # ✅ EL BOTÓN PRIMERO - TODO EL ANÁLISIS DENTRO DE ESTE BLOQUE
             if st.button("🚀 **Ejecutar Análisis Completo**", type="primary", use_container_width=True):
                 with st.spinner(f"🔍 Analizando {sample_size} textos con BERT..."):
                     # Preparar datos
                     df_sample = df.sample(sample_size, random_state=42)
                     texts = df_sample[text_column].dropna().tolist()
-                    
+
                     if not texts:
                         st.error("❌ No hay textos válidos para analizar")
                         return
-                    
+
                     # Análisis de sentimientos
                     results = sentiment_service.analyze_batch(texts)
-                    
-                    # SECCIÓN: RESULTADOS
-                    st.header("📈 Resultados del Análisis")
-                    
+
+                    # ✅ AHORA SÍ - procesar temas DENTRO del mismo bloque (DESPUÉS de crear results)
+                    if topic_service:
+                        with st.spinner("🔍 Analizando temas y categorías..."):
+                            topics = topic_service.extract_topics_from_legacy(results)
+        
+                            if topics:
+                                st.subheader("🎯 Temas Detectados (Analisis Mejorado)")
+        
+                                for topic in topics[:5]:  # Mostrar solo top 5
+                                    with st.expander(f"📋 {topic['name'].title()} (Frecuencia: {topic['frequency']})"):
+                                        st.write(f"**Categoria:** {topic['category']}")
+                                        st.write(f"**Ratio Negativo:** {topic['negative_ratio']:.1%}")
+                                        st.write(f"**Idioma:** {topic['language']}")
+                                        st.write("**Ejemplos:**")
+                                        for example in topic['examples']:
+                                            st.write(f"• {example}")
+
+                    # ✅ SECCIÓN DE RESULTADOS ORIGINAL también DENTRO del bloque
+                    st.header("📈 Resultados del Analisis")
+
                     # Métricas principales
-                    st.subheader("📊 Métricas Clave")
+                    st.subheader("📊 Metricas Clave")
                     col1, col2, col3, col4 = st.columns(4)
-                    
-                    # Calcular métricas
+
+                    # Calcular metricas
                     sentiments = [r['sentiment'] for r in results]
                     sentiment_counts = Counter(sentiments)
-                    
+
                     total = len(results)
                     positive = sum(1 for s in sentiments if '4 stars' in s or '5 stars' in s)
                     negative = sum(1 for s in sentiments if '1 star' in s or '2 stars' in s)
                     neutral = total - positive - negative
-                    
+
                     with col1:
                         st.metric("👍 Positivos", f"{(positive/total)*100:.1f}%", f"{positive} textos")
-                    
+
                     with col2:
                         st.metric("👎 Negativos", f"{(negative/total)*100:.1f}%", f"{negative} textos")
-                    
+
                     with col3:
                         st.metric("⚖️ Neutrales", f"{(neutral/total)*100:.1f}%", f"{neutral} textos")
-                    
+
                     with col4:
                         avg_rating = sum(
                             5 if '5 stars' in s else
