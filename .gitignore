@@ -41,3 +41,27 @@ Thumbs.db
 # Archivos de entorno
 .env
 .env.local
+
+# Visual Studio
+*.pyproj
+*.sln
+.vs/
+v17/
+*.suo
+*.wsuo
+*.user
+*.userosscache
+*.sln.docstates
+
+# GitHub Copilot
+CopilotIndices/
+
+# VS File Content Index
+FileContentIndex/
+
+# Jupyter Notebook checkpoints
+.notebooks/
+.ipynb_checkpoints/
+
+# Datos grandes (OPCIONAL - si son muy pesados)
+# data/*.csv
