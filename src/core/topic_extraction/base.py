@@ -3,7 +3,7 @@ from typing import List, Dict
 from domain.entities import AnalyzedText, Topic, Language, SentimentLabel
 
 class BaseTopicExtractor(ABC):
-    """Interface para estrategias de extracción de temas"""
+    """Interface para estrategias de extraccion de temas"""
     
     @property
     @abstractmethod
@@ -17,7 +17,7 @@ class BaseTopicExtractor(ABC):
         pass
     
     def _calculate_sentiment_distribution(self, texts: List[AnalyzedText]) -> Dict[SentimentLabel, int]:
-        """Calcular distribución de sentimientos"""
+        """Calcular distribucion de sentimientos"""
         distribution = {label: 0 for label in SentimentLabel}
         for text in texts:
             distribution[text.sentiment] += 1

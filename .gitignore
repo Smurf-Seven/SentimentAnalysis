@@ -65,3 +65,7 @@ FileContentIndex/
 
 # Datos grandes (OPCIONAL - si son muy pesados)
 # data/*.csv
+
+data/Reddit_Data.csv
+data/Twitter_Data.csv
+data/sentiment_data.csv

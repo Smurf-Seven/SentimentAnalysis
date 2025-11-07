@@ -1,6 +1,6 @@
 # main.py (debería estar en la raíz)
 #!/usr/bin/env python3
-"""Sistema de Análisis de Sentimiento - Arquitectura Mejorada"""
+"""Sistema de ANALISIS de Sentimiento - Arquitectura Mejorada"""
 
 import sys
 import os
@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 from services.sentiment_service import SentimentService
 
 def main():
-    print("🚀 SISTEMA DE ANÁLISIS - ARQUITECTURA MEJORADA")
+    print("🚀 SISTEMA DE ANALISIS - ARQUITECTURA MEJORADA")
     print("=" * 50)
     
     try:
@@ -25,7 +25,7 @@ def main():
             print(f"   📊 {model_name}: {info}")
 
         
-        # Probar análisis
+        # Probar ANALISIS
         test_texts = [
             "I love this product! It's amazing!",
             "This is terrible and I hate it.",
@@ -34,7 +34,7 @@ def main():
             "Poor quality, broke after one week of use."
         ]
         
-        print("\n🧪 PRUEBAS DE ANÁLISIS:")
+        print("\n🧪 PRUEBAS DE ANALISIS:")
         print("-" * 40)
         
         for text in test_texts:

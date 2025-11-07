@@ -1,92 +1,64 @@
-# src/services/topic_service.py - VERSION SIMPLIFICADA
+﻿# src/services/topic_service.py - SOLO COORDINACIÓN
 import logging
-import re
 from typing import List, Dict, Any
-from enum import Enum
 
 logger = logging.getLogger(__name__)
 
-class Language(Enum):
-    SPANISH = "es"
-    ENGLISH = "en"
-
 class TopicService:
-    """Servicio de temas - Version simplificada para compatibilidad inmediata"""
+    """Servicio de temas - SOLO coordina, CERO LOGICA de negocio"""
     
     def __init__(self):
-        self.spanish_categories = {
-            'producto': ['producto', 'calidad', 'funcion', 'diseno', 'rendimiento'],
-            'servicio': ['servicio', 'atencion', 'soporte', 'asesoramiento', 'trato'],
-            'entrega': ['entrega', 'envio', 'tiempo', 'logistica', 'demora'],
-            'precio': ['precio', 'costo', 'valor', 'caro', 'barato']
-        }
-        
-        self.english_categories = {
-            'product': ['product', 'quality', 'feature', 'design', 'performance'],
-            'service': ['service', 'support', 'customer', 'help', 'assistance'],
-            'shipping': ['shipping', 'delivery', 'time', 'logistics', 'delay'],
-            'price': ['price', 'cost', 'value', 'expensive', 'cheap']
-        }
+        # ✅ DELEGA toda la LOGICA de negocio al core
+        self.multi_language_extractor = self._initialize_extractor()
     
-    def detect_language(self, text: str) -> Language:
-        """Deteccion simple de idioma"""
-        text_lower = text.lower()
-        spanish_indicators = ['el', 'la', 'de', 'que', 'y', 'en', 'un', 'es']
-        english_indicators = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on']
-        
-        spanish_count = sum(1 for word in spanish_indicators if word in text_lower)
-        english_count = sum(1 for word in english_indicators if word in text_lower)
-        
-        return Language.SPANISH if spanish_count > english_count else Language.ENGLISH
+    def _initialize_extractor(self):
+        """Inicializar el extractor multiidioma - SOLO COORDINACIÓN"""
+        try:
+            from core.topic_extraction.multi_language import MultiLanguageTopicExtractor
+            return MultiLanguageTopicExtractor()
+        except ImportError as e:
+            logger.warning(f"MultiLanguage extractor not available: {e}")
+            return None
     
     def extract_topics_from_legacy(self, legacy_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Extraer temas desde resultados legacy - Version simplificada"""
+        """
+        Extraer temas desde resultados legacy
+        RESPONSABILIDAD: Solo coordinar el proceso
+        """
+        if not self.multi_language_extractor:
+            logger.warning("Topic extractor not available")
+            return []
+        
         try:
-            topics_by_category = {}
+            # 1. CONVERSIÓN de formatos (responsabilidad del servicio)
+            analyzed_texts = self._convert_to_domain_entities(legacy_results)
             
-            for result in legacy_results:
-                text = result.get('text', '').lower()
-                sentiment = result.get('sentiment', '3 stars')
-                language = self.detect_language(text)
-                
-                categories = self.spanish_categories if language == Language.SPANISH else self.english_categories
-                
-                for category, keywords in categories.items():
-                    if any(keyword in text for keyword in keywords):
-                        if category not in topics_by_category:
-                            topics_by_category[category] = {
-                                'positive': 0,
-                                'negative': 0,
-                                'examples': [],
-                                'language': language.value
-                            }
-                        
-                        # Contar sentimiento
-                        if sentiment in ['4 stars', '5 stars']:
-                            topics_by_category[category]['positive'] += 1
-                        elif sentiment in ['1 star', '2 stars']:
-                            topics_by_category[category]['negative'] += 1
-                        
-                        # Guardar ejemplo
-                        if len(topics_by_category[category]['examples']) < 3:
-                            topics_by_category[category]['examples'].append(text[:80] + "...")
+            # 2. ✅ DELEGACIÓN a core (ellos tienen la LOGICA de negocio)
+            domain_topics = self.multi_language_extractor.extract(analyzed_texts)
             
-            # Convertir a formato de salida
-            topics = []
-            for category, data in topics_by_category.items():
-                total = data['positive'] + data['negative']
-                if total >= 2:  # Minimo 2 menciones
-                    topics.append({
-                        'name': category,
-                        'category': category,
-                        'frequency': total,
-                        'negative_ratio': data['negative'] / total if total > 0 else 0,
-                        'examples': data['examples'],
-                        'language': data['language']
-                    })
-            
-            return sorted(topics, key=lambda x: x['negative_ratio'], reverse=True)
+            # 3. CONVERSIÓN a formato legacy
+            return self._convert_to_legacy_format(domain_topics)
             
         except Exception as e:
-            logger.error(f"Error extracting topics: {e}")
+            logger.error(f"Error in topic extraction coordination: {e}")
+            return []
+    
+    def _convert_to_domain_entities(self, legacy_results: List[Dict[str, Any]]) -> List[Any]:
+        """Convertir resultados legacy a entidades de dominio - RESPONSABILIDAD DEL SERVICIO"""
+        try:
+            from domain.entities import AnalyzedText
+            return [AnalyzedText.from_legacy(result) for result in legacy_results]
+        except ImportError as e:
+            logger.error(f"Error importing domain entities: {e}")
+            return []
+    
+    def _convert_to_legacy_format(self, domain_topics: List[Any]) -> List[Dict[str, Any]]:
+        """Convertir temas de dominio a formato legacy - RESPONSABILIDAD DEL SERVICIO"""
+        try:
+            if hasattr(domain_topics[0], 'to_legacy_dict'):
+                return [topic.to_legacy_dict() for topic in domain_topics]
+            else:
+                # Fallback si no tiene el método
+                return []
+        except (IndexError, AttributeError):
             return []

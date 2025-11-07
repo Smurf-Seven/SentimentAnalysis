@@ -1,16 +1,17 @@
+#-*- coding: utf-8 -*-
 from typing import List, Dict
 from domain.entities import AnalyzedText, Topic, Language
 from .base import BaseTopicExtractor
 
 class MultiLanguageTopicExtractor(BaseTopicExtractor):
-    """Coordinador que delega a extractores específicos por idioma"""
+    """Coordinador que delega a extractores especificos por idioma"""
     
     def __init__(self):
         self.extractors: Dict[Language, BaseTopicExtractor] = {}
         self._setup_extractors()
     
     def _setup_extractors(self):
-        """Configurar extractores disponibles"""
+        """Configurar extractores disponibles - LoGICA DE COORDINACIoN"""
         try:
             from .strategies.spanish import SpanishTopicExtractor
             from .strategies.english import EnglishTopicExtractor
@@ -23,10 +24,10 @@ class MultiLanguageTopicExtractor(BaseTopicExtractor):
     
     @property
     def supported_language(self) -> Language:
-        return Language.AUTO  # Soporta múltiples idiomas
+        return Language.AUTO
     
     def extract(self, texts: List[AnalyzedText]) -> List[Topic]:
-        """Extraer temas agrupando por idioma"""
+        """Extraer temas agrupando por idioma - LoGICA DE COORDINACIoN"""
         # Agrupar textos por idioma
         texts_by_language: Dict[Language, List[AnalyzedText]] = {}
         for text in texts:

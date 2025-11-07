@@ -5,6 +5,7 @@ import os
 from collections import Counter
 import plotly.express as px
 import re
+"""Responsabilidad: Mostrar información y capturar interacciones del usuario."""
 
 # ========== CONFIGURACIÓN DE PATHS ==========
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -25,7 +26,7 @@ for path in sys.path[:6]:  # Mostrar solo los primeros 6
 try:
     from sentiment_service import SentimentService
     from dataset_analyzer import DatasetAnalyzer
-    st.success("✅ Sistema de análisis básico cargado correctamente")
+    st.success("✅ Sistema de ANALISIS básico cargado correctamente")
 except ImportError as e:
     st.error(f"❌ Error cargando sistema básico: {e}")
     st.stop()
@@ -37,7 +38,7 @@ try:
     st.success(" Sistema de temas mejorado cargado")
 except ImportError as e:
     st.warning(f" Sistema de temas mejorado no disponible: {e}")
-    st.info("💡 Usando análisis básico de temas...")
+    st.info("💡 Usando ANALISIS básico de temas...")
     topic_service = None
 
 # ... el resto del código permanece igual ...
@@ -72,7 +73,7 @@ def main():
         layout="wide"
     )
     
-    st.title("🚀 Sistema de Análisis de Clientes")
+    st.title("🚀 Sistema de ANALISIS de Clientes")
     st.markdown("**Sube tus datos y obtén insights automáticos en minutos**")
     st.markdown("---")
     
@@ -85,7 +86,7 @@ def main():
     
     sentiment_service, analyzer = load_services()
     
-    # SECCIÓN: SUBIDA DE ARCHIVOS
+    # SECCION: SUBIDA DE ARCHIVOS
     st.header("📤 Subir Datos")
     uploaded_file = st.file_uploader(
         "Arrastra tu archivo CSV o Excel aquí", 
@@ -103,10 +104,10 @@ def main():
                 
             st.success(f"✅ **Datos cargados:** {len(df)} filas, {len(df.columns)} columnas")
             
-            # SECCIÓN: DETECCIÓN DE COLUMNAS
-            st.header("🔍 Configuración del Análisis")
+            # SECCION: deteccion DE COLUMNAS
+            st.header("🔍 Configuración del ANALISIS")
             
-            # Detectar columnas de texto automáticamente
+            # Detectar columnas de texto automaticamente
             text_columns = []
             for col in df.columns:
                 col_lower = col.lower()
@@ -123,7 +124,7 @@ def main():
                     help="Esta columna debe contener los comentarios, reviews o textos a analizar"
                 )
             else:
-                st.warning("⚠️ No se detectaron columnas de texto automáticamente")
+                st.warning("⚠️ No se detectaron columnas de texto automaticamente")
                 text_column = st.selectbox(
                     "**Selecciona manualmente la columna de texto:**",
                     df.columns,
@@ -135,8 +136,8 @@ def main():
                 st.dataframe(df.head(10), use_container_width=True)
                 st.write(f"**Columnas disponibles:** {list(df.columns)}")
             
-            # SECCIÓN: ANÁLISIS
-            st.header("🎯 Ejecutar Análisis")
+            # SECCION: ANALISIS
+            st.header("🎯 Ejecutar ANALISIS")
             
             sample_size = st.slider(
                 "**Número de muestras a analizar:**",
@@ -146,8 +147,8 @@ def main():
                 help="Para datasets grandes, analizar una muestra es más rápido"
             )
             
-            # ✅ EL BOTÓN PRIMERO - TODO EL ANÁLISIS DENTRO DE ESTE BLOQUE
-            if st.button("🚀 **Ejecutar Análisis Completo**", type="primary", use_container_width=True):
+            # ✅ EL BOTON PRIMERO - TODO EL ANALISIS DENTRO DE ESTE BLOQUE
+            if st.button("🚀 **Ejecutar ANALISIS Completo**", type="primary", use_container_width=True):
                 with st.spinner(f"🔍 Analizando {sample_size} textos con BERT..."):
                     # Preparar datos
                     df_sample = df.sample(sample_size, random_state=42)
@@ -157,10 +158,10 @@ def main():
                         st.error("❌ No hay textos válidos para analizar")
                         return
 
-                    # Análisis de sentimientos
+                    # ANALISIS de sentimientos
                     results = sentiment_service.analyze_batch(texts)
 
-                    # ✅ AHORA SÍ - procesar temas DENTRO del mismo bloque (DESPUÉS de crear results)
+                    # ✅ AHORA SI - procesar temas DENTRO del mismo bloque (DESPUES de crear results)
                     if topic_service:
                         with st.spinner("🔍 Analizando temas y categorías..."):
                             topics = topic_service.extract_topics_from_legacy(results)
@@ -177,10 +178,10 @@ def main():
                                         for example in topic['examples']:
                                             st.write(f"• {example}")
 
-                    # ✅ SECCIÓN DE RESULTADOS ORIGINAL también DENTRO del bloque
+                    # ✅ SECCION DE RESULTADOS ORIGINAL tambien DENTRO del bloque
                     st.header("📈 Resultados del Analisis")
 
-                    # Métricas principales
+                    # Metricas principales
                     st.subheader("📊 Metricas Clave")
                     col1, col2, col3, col4 = st.columns(4)
 
@@ -212,10 +213,10 @@ def main():
                         ) / total
                         st.metric("⭐ Rating Promedio", f"{avg_rating:.1f}/5")
                     
-                    # Gráfico de distribución
-                    st.subheader("📊 Distribución de Sentimientos")
+                    # Grafico de distribucion
+                    st.subheader("📊 distribucion de Sentimientos")
                     
-                    # Preparar datos para el gráfico
+                    # Preparar datos para el Grafico
                     sentiment_df = pd.DataFrame({
                         'Sentimiento': list(sentiment_counts.keys()),
                         'Cantidad': list(sentiment_counts.values())
@@ -226,12 +227,12 @@ def main():
                         x='Sentimiento', 
                         y='Cantidad',
                         color='Sentimiento',
-                        title="Distribución de Sentimientos por Estrellas"
+                        title="distribucion de Sentimientos por Estrellas"
                     )
                     st.plotly_chart(fig, use_container_width=True)
                     
-                    # PROBLEMAS CRÍTICOS
-                    st.subheader("🚨 Problemas Críticos Detectados")
+                    # PROBLEMAS CRITICOS
+                    st.subheader("🚨 Problemas CRITICOS Detectados")
                     
                     if negative > 0:
                         negative_reviews = [r for r in results if '1 star' in r['sentiment'] or '2 stars' in r['sentiment']]
@@ -273,7 +274,7 @@ def main():
                                 st.write(f"• **{strength}** - mencionado en {count} elogios")
                     
                     # EJEMPLOS DETALLADOS
-                    st.subheader("📝 Ejemplos de Análisis")
+                    st.subheader("📝 Ejemplos de ANALISIS")
                     
                     tab1, tab2, tab3 = st.tabs(["👍 Positivos", "👎 Negativos", "⚖️ Neutrales"])
                     

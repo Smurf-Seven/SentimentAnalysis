@@ -1,4 +1,5 @@
 """BERT Model for sentiment analysis"""
+"""Responsabilidad: Interactuar con tecnologias externas (BERT, APIs, bases de datos)."""
 
 import logging
 from typing import Dict, Any
